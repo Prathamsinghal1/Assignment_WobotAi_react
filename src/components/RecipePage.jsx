@@ -1,70 +1,59 @@
-import React, { useEffect, useState } from 'react';
-import { fetchDishes } from '../api';
-import RecipePageCard from './RecipePageCard';
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import RecipePageCard from "./RecipePageCard"; // Assuming this component is defined separately
+import { API_KEY } from "../api";
+
+// Fetch recipes based on a search query
+const fetchRecipes = async (searchQuery) => {
+  const url = `https://api.spoonacular.com/recipes/complexSearch?${
+    searchQuery ? `query=${searchQuery}&` : ""
+  }apiKey=${API_KEY}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP Error ${response.status}: ${errorText}`);
+    }
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error("Error fetching recipes:", error.message);
+    throw error;
+  }
+};
+
 
 export default function RecipePage() {
-  const [recipes, setRecipes] = useState([]); // State to store fetched data
-  const [error, setError] = useState(null); // State to store errors
-  const [loading, setLoading] = useState(false); // State to manage loading
-  const [searchQuery, setSearchQuery] = useState(""); // State to store search query
-
-  const data = "NOTE: Refresh page if you search any recipe";
+  const [recipes, setRecipes] = useState([]);
+  const [error, setError] = useState(null);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const searchQuery = queryParams.get("search");
 
   useEffect(() => {
     const loadRecipes = async () => {
-      setLoading(true); // Start loading
       try {
-        const data = await fetchDishes(searchQuery); // Fetch data with the query
-        setRecipes(data); // Store data in state
-        setError(null); // Clear any previous errors
-
-        // Store the fetched data in localStorage with search query as the key
-        localStorage.setItem("query", JSON.stringify(data));
+        const fetchedRecipes = await fetchRecipes(searchQuery);
+        setRecipes(fetchedRecipes);
       } catch (err) {
-        setError("Failed to fetch recipes. Please try again."); // Handle errors
-      } finally {
-        setLoading(false); // Stop loading
+        setError("Failed to fetch recipes.");
+        console.error(err.message);
       }
     };
+    loadRecipes();
+  }, [searchQuery]);
 
-    // If the search query is empty, do not load recipes.
-    if (searchQuery !== "") {
-      loadRecipes();
-    } else {
-      // If the search query is empty, check if there is any cached data in localStorage
-      const dataFromLocal = localStorage.getItem("query");
-      if (dataFromLocal) {
-        setRecipes(JSON.parse(dataFromLocal)); // Parse and set from localStorage
-      }
-    }
-
-    const hideNoteTimeout = setTimeout(() => {
-      const noteElement = document.getElementById('note');
-      if (noteElement) {
-        noteElement.style.display = "none"; // Hide the note
-      }
-    }, 3000);
-
-    return () => clearTimeout(hideNoteTimeout);
-    
-  }, [searchQuery]); // Run when the searchQuery changes
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
-    
-    <div className="mt-10 mx-auto max-w-[85vw] mb-7">
-
-      <div id='note' className='p-4 bg-green-100 text-green-700 rounded mb-4'>
-      NOTE: Refresh page if you search any recipe</div>
-      {loading && <p>Loading recipes...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {recipes && Array.isArray(recipes) && recipes.length > 0 ? (
-        <ul>
-          {recipes.map((recipe) => (
-            <RecipePageCard key={recipe.id} recipe={recipe} />
-          ))}
-        </ul>
+    <div className="grid gap-6 p-6 mt-4 mx-auto max-w-[85vw]">
+      {recipes.length > 0 ? (
+        recipes.map((recipe) => <RecipePageCard key={recipe.id} recipe={recipe} />)
       ) : (
-        !loading && <p>No recipes found.</p>
+        <div>{searchQuery ? `No recipes found for "${searchQuery}".` : "No recipes found."}</div>
       )}
     </div>
   );

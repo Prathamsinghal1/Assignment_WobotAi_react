@@ -51,7 +51,7 @@ function RecipeDetailsPage() {
 
   // Check if recipe data exists before rendering
   if (!recipe) {
-    return <div>Loading...</div>;
+    return <div className="mt-7 mx-auto max-w-[85vw]">Loading...</div>;
   }
   
 
