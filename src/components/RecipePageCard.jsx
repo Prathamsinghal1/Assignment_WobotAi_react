@@ -5,7 +5,7 @@ import { IoArrowForwardSharp } from "react-icons/io5";
 
 export default function RecipePageCard({ recipe }) {
   return (
-    <div className="border rounded-md hover:shadow-xl flex mb-5">
+    <div className="md:border rounded-md hover:shadow-xl flex mb-5">
       
         <div className=" flex  justify-center items-center p-7 gap-9 ">
           <img
@@ -19,9 +19,9 @@ export default function RecipePageCard({ recipe }) {
           />
 
           <div className="">
-          <h3 className="text-xl font-semibold text-center my-3">{recipe.title}</h3>
+          <h3 className="text-xl font-semibold text-center my-3 max-sm:text-sm">{recipe.title}</h3>
           <Link to={`/recipe/${recipe.id}`}>
-          <button className="flex items-center gap-2 bg-gradient-to-b from-indigo-400 to-pink-400  px-3 py-1 rounded-md text-white text-sm">
+          <button className="flex items-center gap-2 bg-gradient-to-b from-indigo-400 to-pink-400  px-3 py-1 rounded-md text-white text-sm max-sm:text-xs">
             
          Want to know recipe  
          <IoArrowForwardSharp />
